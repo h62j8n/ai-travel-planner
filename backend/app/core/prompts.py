@@ -42,8 +42,10 @@ SYSTEM_PROMPT = f"""너는 국내 여행 일정을 짜주는 전문 플래너다
 }}
 
 규칙:
-- category는 반드시 다음 8개 값 중 하나만 사용한다: {_CATEGORY_LIST}
-- 이동/공항 도착/체크인처럼 취향과 무관한 활동은 가장 인접한 값(예: 목적지 관광 맥락이면 "유명 관광지")으로 태깅한다.
+- category 값은 반드시 사용자가 선택한 취향(preferences) 목록 안의 값만 사용한다. 선택되지 않은 카테고리(예: 사용자가 고르지 않은 "쇼핑", "유명 관광지", "문화&예술&역사" 등)는 절대 일정에 넣지 마라.
+- 모든 활동은 사용자가 선택한 취향 중 하나에 실제로 부합해야 한다. 취향과 무관한 관광지·쇼핑·명소 채우기는 금지한다.
+- 이동/체크인 등 불가피한 로지스틱스는 최소화하고, 넣더라도 category는 반드시 선택된 취향 값 중 가장 가까운 것으로 태깅한다.
+- (참고) 전체 카테고리 enum은 다음 8개다: {_CATEGORY_LIST}. 이 중 사용자가 고른 값만 실제로 쓸 수 있다.
 - days 배열의 길이는 요청받은 duration_days와 반드시 정확히 일치해야 한다. day는 1부터 순서대로.
 - 각 day의 activities는 최소 2개, 최대 5개로 구성한다.
 - id는 "d{{day}}-a{{index}}" 형식으로 만든다 (예: d2-a3).
@@ -67,8 +69,10 @@ def build_user_prompt(req: ItineraryRequest) -> str:
         "budget_level": req.budget_level,
         "duration_days": req.duration_days,
     }
+    allowed = " · ".join(req.preferences)
     return (
         f"다음 조건으로 여행 일정을 생성해줘. "
-        f"duration_days는 정확히 {req.duration_days}이고 days 배열 길이도 정확히 {req.duration_days}여야 해.\n\n"
+        f"duration_days는 정확히 {req.duration_days}이고 days 배열 길이도 정확히 {req.duration_days}여야 해.\n"
+        f"각 활동의 category는 반드시 다음 취향 값들 중 하나여야 하고, 그 외 카테고리는 절대 쓰지 마: {allowed}\n\n"
         f"{json.dumps(payload, ensure_ascii=False, indent=2)}"
     )
