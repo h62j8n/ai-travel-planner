@@ -1,10 +1,14 @@
 :root {
-  color-scheme: light dark;
+  /* Element Plus 라이트 테마만 로드하므로 OS 다크 모드를 따르지 않고 라이트로 고정.
+     (OS가 다크일 때 브라우저가 배경을 검정으로 깔아 EP 라이트 글자색과 겹쳐 안 보이던 문제) */
+  color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 body {
   margin: 0;
+  background-color: var(--el-bg-color, #ffffff);
+  color: var(--el-text-color-primary, #303133);
 }
 
 header {
